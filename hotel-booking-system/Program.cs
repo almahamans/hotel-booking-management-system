@@ -1,4 +1,7 @@
-﻿    abstract class Room{
+﻿interface Check{
+    public void CheckAvailability(int roomNumber);
+}
+abstract class Room : Check{
     public int RoomNumber{get; set;}
     public double Price{get; set;}
     public bool IsAvailable{get; set;}
@@ -33,13 +36,10 @@
     public virtual string RoomType(){
         return "A Room";
     }
-
 }
 class StandardRoom : Room
 {
-    public StandardRoom(int roomNumber, double price) : base(roomNumber, price)
-    {      
-    }
+    public StandardRoom(int roomNumber, double price) : base(roomNumber, price){}
     public override double CalculatePrice(){
         return Price;
     }
@@ -47,11 +47,9 @@ class StandardRoom : Room
         return "Standard Room";
     }
 }
-class DeluxeRoom : Room
-{
+class DeluxeRoom : Room{
     public double AdditionalFeature{get; set;}
-    public DeluxeRoom(int roomNumber, double price, double additionalFeature) : base(roomNumber, price)
-    {
+    public DeluxeRoom(int roomNumber, double price, double additionalFeature) : base(roomNumber, price){
         AdditionalFeature = additionalFeature;
     }
     public override double CalculatePrice(){
@@ -61,11 +59,9 @@ class DeluxeRoom : Room
         return "Deluxe Room";
     }
 }
-class SuiteRoom : Room
-{
+class SuiteRoom : Room{
     public double ExtraFeatures{get; set;}
-    public SuiteRoom(int roomNumber, double price, double extraFeatures) : base(roomNumber, price)
-    {
+    public SuiteRoom(int roomNumber, double price, double extraFeatures) : base(roomNumber, price){
         ExtraFeatures = extraFeatures;
     }
     public override double CalculatePrice(){
@@ -100,6 +96,9 @@ class Customer{
         Console.WriteLine($"Customer Name:{Name} Contact Info: {ContactInfo} Customer ID: {CustomerID}");   
     }
 }
+// interface{
+
+// }
 class Booking{
     static int _bookingID = 0;
     public int BookingID { get; }
@@ -113,7 +112,7 @@ class Booking{
         CustomerName = customerName;
         TotalAmount = totalAmount;
     }
-    public Booking(){}
+public Booking(){}
     public static List<Booking> bookings = new List<Booking>();
     int nights;
     DateTime checkInDate;
@@ -125,42 +124,37 @@ class Booking{
         TotalAmount = price * nights ;
         Console.WriteLine($"{TotalAmount}"); 
     }
-    public void ConfirmBooking(Booking booking){
-        Console.WriteLine($"Booking Confirmed");
-        bookings.Add(booking); 
-        booking.RoomType.BookRoom();
-        booking.DisplayBooking();  
-    }
     public void DisplayBooking(){
        Console.WriteLine($"Booking ID:{BookingID} \n Customer Name:{CustomerName.Name} \n Room Type:{RoomType.RoomType()} \n Room Number:{RoomType.RoomNumber} \n Check In Date:{checkInDate} \n Check Out Date:{checkOutDate} \n Nights: {nights} \n Total Amount:{TotalAmount}");     
     }
-    public void CheckAvailability(int roomn){
-       if(RoomType.RoomNumber == roomn && RoomType.IsAvailable){
-        Console.WriteLine($"is available");
-       }else{
-        Console.WriteLine($"is not available");
-       }
+}
+class ConfirmBooking{
+    public void ConfirmBookingFunc(Booking booking){
+        Console.WriteLine($"Booking Confirmed");
+        Booking.bookings.Add(booking); 
+        booking.RoomType.BookRoom();
+        booking.DisplayBooking();  
     }
 }
 class CancelBooking{
     public void CancelBookingById(int id){
         Booking removeBooking = Booking.bookings.Find(i => i.BookingID.Equals(id));
         if(removeBooking != null){
-        Booking.bookings.Remove(removeBooking);
-        removeBooking.RoomType.ReleaseRoom();
-        Console.WriteLine($"Reservation Removed.");
+            Booking.bookings.Remove(removeBooking);
+            removeBooking.RoomType.ReleaseRoom();
+            Console.WriteLine($"Reservation Removed.");
         }else{
-        Console.WriteLine($"Wrong ID number"); 
+            Console.WriteLine($"Wrong ID number"); 
         }             
     }
-        public void CancelBookingByName(string customerName){
+    public void CancelBookingByName(string customerName){
         Booking removeBooking = Booking.bookings.Find(i => i.CustomerName.Name.Contains(customerName, StringComparison.OrdinalIgnoreCase));
         if(removeBooking != null){
-        Booking.bookings.Remove(removeBooking);
-        Console.WriteLine($"Reservation Removed.");
-        removeBooking.RoomType.ReleaseRoom();
+            Booking.bookings.Remove(removeBooking);
+            Console.WriteLine($"Reservation Removed.");
+            removeBooking.RoomType.ReleaseRoom();
         }else{
-        Console.WriteLine($"Wrong customer name"); 
+            Console.WriteLine($"Wrong customer name"); 
         }             
     }
 }
@@ -208,12 +202,11 @@ namespace Client
         double roomPrice = standardRoom.CalculatePrice();
         Customer customer = new Customer("Jane Doe", "john@example.com");
         Booking booking = new Booking(standardRoom, customer, roomPrice);
-        // while(true){
-         if(standardRoom.CheckIsAvailable() == true){    
-
-//display if the room available or not
+        ConfirmBooking confirmBooking = new ConfirmBooking();
+        if(standardRoom.CheckIsAvailable()){    
+//print if the room available or not
             standardRoom.CheckAvailability(standardRoom.RoomNumber);
-//calculate total price
+//calculate total price based on check in and out dates
             Console.WriteLine($"Enter Check in date:");
             DateTime checkIn = Convert.ToDateTime(Console.ReadLine()); 
             Console.WriteLine($"Enter Check out date:");
@@ -224,12 +217,11 @@ namespace Client
             Console.WriteLine($"Confirm the booking? (yes or no)");
             string confirming = Console.ReadLine();
         if(confirming.Equals("yes", StringComparison.OrdinalIgnoreCase)){
-           booking.ConfirmBooking(booking);
+           confirmBooking.ConfirmBookingFunc(booking);
            customer.DisplayCustomerDetails();
+        }else{
+            return;
         }
-        // else{
-            // break;
-        // }
 //choose payment method
             Console.WriteLine($"Choose payment method:");
             string paymentMethod = Console.ReadLine();
@@ -238,29 +230,26 @@ namespace Client
         if(paymentMethod.Contains("credit card", StringComparison.OrdinalIgnoreCase)){
             paymentCreditCard.ProcessPayment(booking.TotalAmount);
             paymentCreditCard.GenerateReceipt();
-            // break;
         }else if(paymentMethod.Contains("pay pal", StringComparison.OrdinalIgnoreCase)){
             paymentPayPal.ProcessPayment(booking.TotalAmount);
             paymentPayPal.GenerateReceipt();
-            // break;
         }else{
-            Console.WriteLine($"Invalid payment method");
-            
+            Console.WriteLine($"Invalid payment method");  
         }
+
         }else{
             Console.WriteLine($"Room not available");   
         }
-        // }  
+//test out functions
         DisplayBooking displayBooking = new DisplayBooking();
         CancelBooking cancelBooking = new CancelBooking();
         DisplayRoom displayRoom = new DisplayRoom();
         // booking.CheckAvailability(201);
         // booking.DisplayBooking();
-        displayBooking.DisplayCustomerBooking("Jane");
+        // displayBooking.DisplayCustomerBooking("Jane");
         // cancelBooking.CancelBookingById(1); 
         // displayRoom.DisplayRoomInfo(standardRoom);
-        
-        cancelBooking.CancelBookingByName("Jane");
+        // cancelBooking.CancelBookingByName("Jane");
 
         }
     }
