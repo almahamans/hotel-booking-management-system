@@ -6,6 +6,7 @@ Hotel Booking Management System is a console-based application developed in C#. 
 - Cancel bookings.
 - Display booking details.
 - Process payments through different methods.
+
 This project serves as a foundational backend system that can be expanded into a full-fledged web or desktop application with additional features and a persistent database. This application used leveraging concepts such as interfaces, abstract classes, inheritance, and polymorphism to create a modular and maintainable codebase.
 
 ## Features:
